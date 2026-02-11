@@ -15,7 +15,7 @@ How the winner is determined is **up to you**. Users must be able to express pre
 **Must have:**
 - Create a party (with configurable conditions like: max song limit, max time limit, or whatever else you think is useful for a host)
 - Shareable way to join a party
-- Add songs to the queue (Spotify integration for search/playback)
+- Add songs to the queue (integrate with a music API of your choice for search/playback)
 - Songs play for all participants
 - Real-time updates (queue changes, current song, participants)
 - A winning song at the end
@@ -38,7 +38,7 @@ We recognize that you may not have experience with some or all of these librarie
 
 However, you should know that this **is** our tech stack, so you'll be rewarded if you're able to use them properly.  
 
-Also, you'll need to integrate with **Spotify's API** for song search and playback. We intentionally did not implement this for you - we're just making sure you know how to figure stuff out on your own. 
+Also, you'll need to integrate with a **music API** for song search and playback. Which API you choose is up to you — do some research and pick one that fits well. We intentionally did not implement this for you - we're just making sure you know how to figure stuff out on your own.
 
 ## What We're Evaluating
 

@@ -8,7 +8,7 @@ A listening party app where friends join, add songs, listen together, and crown 
 
 - Node.js 18+
 - npm or yarn
-- Spotify Developer Account (for API access)
+- A music API for search/playback (your choice — see PROMPT.md)
 
 ### Installation
 
@@ -16,9 +16,8 @@ A listening party app where friends join, add songs, listen together, and crown 
 # Install all dependencies
 npm install
 
-# Set up environment variables
+# Set up environment variables (no API keys required by default)
 cp .env.example .env
-# Then fill in your values in .env
 
 # Set up the database
 cd backend && npx prisma migrate dev && cd ..
@@ -47,4 +46,4 @@ nero-party/
 - **Backend:** Express.js, Prisma, Socket.IO
 - **Frontend:** React, Vite, TailwindCSS
 - **Database:** SQLite (local)
-- **External API:** Spotify Web API
+- **External API:** Music API of your choice (for song search and playback)
