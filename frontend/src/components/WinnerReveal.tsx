@@ -1,8 +1,9 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useEffect } from "react";
 import { Trophy, Medal, Hash, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { gsap } from "gsap";
+import confetti from "canvas-confetti";
 import { Song } from "../hooks/useParty";
 import { useNavigate } from "react-router-dom";
 
@@ -15,19 +16,47 @@ export default function WinnerReveal({ songs }: Props) {
   const contentRef = useRef<HTMLDivElement>(null);
   const winnerCardRef = useRef<HTMLDivElement>(null);
   const restListRef = useRef<HTMLDivElement>(null);
-  const particlesRef = useRef<HTMLDivElement>(null);
 
-  // useLayoutEffect runs before paint — avoids GSAP flash-of-invisible-content
+  // Fire side cannons on mount
+  useEffect(() => {
+    const colors = ["#1DB954", "#ffffff", "#a786ff", "#fd8bbc", "#f8deb1"];
+    const end = Date.now() + 3000;
+
+    const frame = () => {
+      if (Date.now() > end) return;
+
+      confetti({
+        particleCount: 2,
+        angle: 60,
+        spread: 55,
+        startVelocity: 60,
+        origin: { x: 0, y: 0.5 },
+        colors,
+      });
+      confetti({
+        particleCount: 2,
+        angle: 120,
+        spread: 55,
+        startVelocity: 60,
+        origin: { x: 1, y: 0.5 },
+        colors,
+      });
+
+      requestAnimationFrame(frame);
+    };
+
+    frame();
+  }, []);
+
+  // GSAP entrance animations
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline();
 
-      // Fade in the content area (not the overlay — overlay is always opaque)
       if (contentRef.current) {
         tl.from(contentRef.current, { opacity: 0, y: 10, duration: 0.4, ease: "power2.out" });
       }
 
-      // Winner card bounce
       if (winnerCardRef.current) {
         tl.from(
           winnerCardRef.current,
@@ -36,36 +65,12 @@ export default function WinnerReveal({ songs }: Props) {
         );
       }
 
-      // Rest of songs stagger
       if (restListRef.current && restListRef.current.children.length > 0) {
         tl.from(
           Array.from(restListRef.current.children),
           { opacity: 0, y: 12, stagger: 0.08, duration: 0.35, ease: "power2.out" },
           "-=0.2"
         );
-      }
-
-      // Confetti particles — independent of timeline
-      if (particlesRef.current) {
-        const particles = Array.from(particlesRef.current.children) as HTMLElement[];
-        particles.forEach((p) => {
-          const startX = parseFloat(p.dataset.startX ?? "0");
-          gsap.fromTo(
-            p,
-            { y: -20, x: startX, opacity: 1, rotate: 0, scale: 1 },
-            {
-              y: window.innerHeight + 40,
-              x: startX + (Math.random() - 0.5) * 200,
-              rotate: 360 + Math.random() * 360,
-              opacity: 0,
-              scale: 0.5,
-              duration: 2 + Math.random() * 2,
-              delay: Math.random() * 1.5,
-              ease: "none",
-              repeat: -1,
-            }
-          );
-        });
       }
     });
 
@@ -75,40 +80,15 @@ export default function WinnerReveal({ songs }: Props) {
   const handleGoHome = () => {
     localStorage.removeItem("nero_participantId");
     localStorage.removeItem("nero_partyCode");
+    localStorage.removeItem("nero_isSpectator");
     navigate("/");
   };
 
-  const particleColors = ["#1DB954", "#ffffff", "#FFD700", "#FF6B6B", "#4ECDC4"];
   const winner = songs[0];
   const rest = songs.slice(1);
 
   return (
-    // Overlay is always fully opaque — no GSAP fade on it
     <div className="fixed inset-0 bg-black/95 z-50 overflow-y-auto">
-      {/* Confetti — z-0, behind content */}
-      <div ref={particlesRef} className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        {Array.from({ length: 24 }).map((_, i) => {
-          const startX = (i / 24) * (typeof window !== "undefined" ? window.innerWidth : 1200);
-          const color = particleColors[i % particleColors.length];
-          return (
-            <div
-              key={i}
-              data-start-x={startX}
-              className="absolute top-0"
-              style={{
-                left: startX,
-                width: 8,
-                height: 8,
-                backgroundColor: color,
-                borderRadius: i % 2 === 0 ? "50%" : 0,
-                opacity: 0,
-              }}
-            />
-          );
-        })}
-      </div>
-
-      {/* Content — z-10, above confetti */}
       <div ref={contentRef} className="relative z-10 flex flex-col items-center justify-center min-h-screen py-12 px-4">
         <h1 className="text-4xl font-bold text-white mb-2 text-center tracking-tight">
           Party's Over!

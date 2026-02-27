@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Headphones, Users, ListMusic, Plus, LogOut, Loader2 } from "lucide-react";
+import { Headphones, Users, ListMusic, Plus, LogOut, Loader2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BlurFade } from "@/components/ui/blur-fade";
-import { useParty, Song } from "../hooks/useParty";
+import { useParty } from "../hooks/useParty";
 import { useSpotify } from "../hooks/useSpotify";
 import { api } from "../lib/api";
 import NowPlaying from "../components/NowPlaying";
@@ -18,14 +18,15 @@ export default function Party() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const [participantId, setParticipantId] = useState<string | null>(null);
+  const [isSpectator, setIsSpectator] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [songsAddedCount, setSongsAddedCount] = useState(0);
   const [endingParty, setEndingParty] = useState(false);
   const [endPartyError, setEndPartyError] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem("nero_participantId");
-    setParticipantId(stored);
+    setParticipantId(localStorage.getItem("nero_participantId"));
+    setIsSpectator(localStorage.getItem("nero_isSpectator") === "true");
   }, []);
 
   const { party, currentSong, songs, playedSongs, participants, winners, setWinners, startedAt, loading, error } =
@@ -82,6 +83,8 @@ export default function Party() {
 
   const myParticipant = participants.find((p) => p.id === participantId);
   const isHost = myParticipant?.isHost ?? false;
+  const regularCount = participants.filter((p) => !p.isSpectator).length;
+  const spectatorCount = participants.filter((p) => p.isSpectator).length;
 
   if (loading) {
     return (
@@ -121,8 +124,19 @@ export default function Party() {
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-spotify-gray text-sm">
             <Users size={14} />
-            {participants.length}
+            {regularCount}
           </span>
+          {spectatorCount > 0 && (
+            <span className="flex items-center gap-1.5 text-spotify-gray text-sm">
+              <Eye size={14} />
+              {spectatorCount}
+            </span>
+          )}
+          {isSpectator && (
+            <Badge variant="outline" className="text-xs border-white/20 text-white/50">
+              Spectator
+            </Badge>
+          )}
           {!isSpotifyConnected && (
             <Button
               size="sm"
@@ -175,14 +189,16 @@ export default function Party() {
                 <ListMusic size={14} />
                 Up Next
               </h2>
-              <Button
-                size="sm"
-                onClick={() => setShowSearch(true)}
-                className="bg-spotify-green text-black hover:bg-spotify-green/90 font-semibold text-xs rounded-full h-8 gap-1.5"
-              >
-                <Plus size={14} />
-                Add Song
-              </Button>
+              {!isSpectator && (
+                <Button
+                  size="sm"
+                  onClick={() => setShowSearch(true)}
+                  className="bg-spotify-green text-black hover:bg-spotify-green/90 font-semibold text-xs rounded-full h-8 gap-1.5"
+                >
+                  <Plus size={14} />
+                  Add Song
+                </Button>
+              )}
             </div>
             <div className="flex-1 overflow-hidden">
               <Queue songs={songs} playedSongs={playedSongs} participantId={participantId} partyStatus={party.status} />

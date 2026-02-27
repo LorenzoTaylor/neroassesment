@@ -27,6 +27,7 @@ export default function Home() {
     displayName: "",
     maxSongs: "",
     songsPerPerson: "",
+    maxParticipants: "",
   });
   const [joinForm, setJoinForm] = useState({ code: "", displayName: "" });
   const [createError, setCreateError] = useState("");
@@ -86,8 +87,10 @@ export default function Home() {
         createForm.name.trim(),
         createForm.displayName.trim(),
         createForm.maxSongs ? parseInt(createForm.maxSongs) : undefined,
-        createForm.songsPerPerson ? parseInt(createForm.songsPerPerson) : undefined
+        createForm.songsPerPerson ? parseInt(createForm.songsPerPerson) : undefined,
+        createForm.maxParticipants ? parseInt(createForm.maxParticipants) : undefined
       );
+      localStorage.removeItem("nero_isSpectator");
       localStorage.setItem("nero_participantId", data.participantId);
       localStorage.setItem("nero_partyCode", data.party.code);
       navigate(`/party/${data.party.code}`);
@@ -101,13 +104,21 @@ export default function Home() {
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     setJoinError("");
-    if (!joinForm.code.trim() || !joinForm.displayName.trim()) {
-      setJoinError("Code and display name are required");
+    if (!joinForm.code.trim()) {
+      setJoinError("Party code is required");
       return;
     }
     setJoining(true);
     try {
-      const data = await api.joinParty(joinForm.code.trim().toUpperCase(), joinForm.displayName.trim());
+      const data = await api.joinParty(
+        joinForm.code.trim().toUpperCase(),
+        joinForm.displayName.trim() || undefined
+      );
+      if (data.isSpectator) {
+        localStorage.setItem("nero_isSpectator", "true");
+      } else {
+        localStorage.removeItem("nero_isSpectator");
+      }
       localStorage.setItem("nero_participantId", data.participantId);
       localStorage.setItem("nero_partyCode", joinForm.code.trim().toUpperCase());
       navigate(`/party/${joinForm.code.trim().toUpperCase()}`);
@@ -199,7 +210,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-semibold uppercase tracking-widest text-spotify-gray">
                     Max Songs
@@ -221,6 +232,19 @@ export default function Home() {
                     type="number"
                     value={createForm.songsPerPerson}
                     onChange={(e) => setCreateForm((f) => ({ ...f, songsPerPerson: e.target.value }))}
+                    placeholder="∞"
+                    min="1"
+                    className="bg-black/40 border-white/15 text-white placeholder:text-white/30 focus-visible:ring-spotify-green focus-visible:border-spotify-green"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-widest text-spotify-gray">
+                    Max Members
+                  </label>
+                  <Input
+                    type="number"
+                    value={createForm.maxParticipants}
+                    onChange={(e) => setCreateForm((f) => ({ ...f, maxParticipants: e.target.value }))}
                     placeholder="∞"
                     min="1"
                     className="bg-black/40 border-white/15 text-white placeholder:text-white/30 focus-visible:ring-spotify-green focus-visible:border-spotify-green"
@@ -269,7 +293,7 @@ export default function Home() {
                   type="text"
                   value={joinForm.displayName}
                   onChange={(e) => setJoinForm((f) => ({ ...f, displayName: e.target.value }))}
-                  placeholder="Alice"
+                  placeholder="Alice (optional for spectators)"
                   className="bg-black/40 border-white/15 text-white placeholder:text-white/30 focus-visible:ring-spotify-green focus-visible:border-spotify-green"
                 />
               </div>

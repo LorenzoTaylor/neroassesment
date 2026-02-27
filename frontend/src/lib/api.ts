@@ -22,15 +22,15 @@ export interface SongData {
 }
 
 export const api = {
-  createParty: (name: string, displayName: string, maxSongs?: number, songsPerPerson?: number) =>
+  createParty: (name: string, displayName: string, maxSongs?: number, songsPerPerson?: number, maxParticipants?: number) =>
     apiFetch("/api/parties", {
       method: "POST",
-      body: JSON.stringify({ name, displayName, maxSongs, songsPerPerson }),
+      body: JSON.stringify({ name, displayName, maxSongs, songsPerPerson, maxParticipants }),
     }),
 
   getParty: (code: string) => apiFetch(`/api/parties/${code}`),
 
-  joinParty: (code: string, displayName: string) =>
+  joinParty: (code: string, displayName?: string) =>
     apiFetch(`/api/parties/${code}/join`, {
       method: "POST",
       body: JSON.stringify({ displayName }),

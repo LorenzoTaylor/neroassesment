@@ -6,6 +6,7 @@ export interface Participant {
   id: string;
   displayName: string;
   isHost: boolean;
+  isSpectator: boolean;
 }
 
 export interface Song {
@@ -30,6 +31,7 @@ export interface Party {
   status: "waiting" | "active" | "ended";
   maxSongs?: number;
   songsPerPerson?: number;
+  maxParticipants?: number;
   participants: Participant[];
   songs: Song[];
 }
