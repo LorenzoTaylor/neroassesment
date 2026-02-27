@@ -7,4 +7,53 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-// Design your schema here
+model Party {
+  id             String        @id @default(cuid())
+  code           String        @unique
+  name           String
+  status         String        @default("waiting")
+  maxSongs       Int?
+  songsPerPerson Int?
+  createdAt      DateTime      @default(now())
+  participants   Participant[]
+  songs          Song[]
+}
+
+model Participant {
+  id          String   @id @default(cuid())
+  partyId     String
+  displayName String
+  isHost      Boolean  @default(false)
+  joinedAt    DateTime @default(now())
+  party       Party    @relation(fields: [partyId], references: [id])
+  votes       Vote[]
+  songs       Song[]
+}
+
+model Song {
+  id            String      @id @default(cuid())
+  partyId       String
+  spotifyId     String
+  title         String
+  artist        String
+  albumArt      String
+  previewUrl    String?
+  durationMs    Int
+  addedById     String
+  playedAt      DateTime?
+  queuePosition Int
+  party         Party       @relation(fields: [partyId], references: [id])
+  addedBy       Participant @relation(fields: [addedById], references: [id])
+  votes         Vote[]
+}
+
+model Vote {
+  id            String      @id @default(cuid())
+  songId        String
+  participantId String
+  value         Int
+  createdAt     DateTime    @default(now())
+  song          Song        @relation(fields: [songId], references: [id])
+  participant   Participant @relation(fields: [participantId], references: [id])
+  @@unique([songId, participantId])
+}

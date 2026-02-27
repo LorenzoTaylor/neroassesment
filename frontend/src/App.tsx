@@ -1,12 +1,16 @@
-function App() {
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Party from "./pages/Party";
+import SpotifyCallback from "./pages/SpotifyCallback";
+
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900">Nero Party</h1>
-        <p className="mt-2 text-gray-600">Start building here.</p>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/party/:code" element={<Party />} />
+        <Route path="/callback" element={<SpotifyCallback />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;
